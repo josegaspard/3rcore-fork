@@ -220,6 +220,17 @@ export const BLOG_SEO_OVERRIDES: Record<string, BlogSeoOverride> = {
       'Qué hace una agencia de marketing integral, sus 4 ventajas (experiencia, enfoque integral, ahorro y resultados medibles) y cómo combina SEO, redes y pauta.',
   },
 
+  // 19-nov-2026. GSC 90 d (19-ago→16-nov): «servicio auditoria seo» 65 impr. en
+  // pos. 4,1 y «servicio de auditoria seo» 61 en pos. 6,0, las dos a este post y
+  // con 0 clics. El title de la base no dice «servicio». Lo que enumera la
+  // descripción son secciones del propio artículo (indexación, Core Web Vitals,
+  // canónicas, canibalización, SEO local, backlinks y el entregable).
+  'auditoria-seo-que-incluye': {
+    title: 'Servicio de auditoría SEO: qué incluye y qué exigir',
+    description:
+      'Qué revisa un servicio de auditoría SEO: indexación, Core Web Vitals, canónicas, canibalización, SEO local y backlinks, y qué entregable exigir.',
+  },
+
   // 28-sep-2026. Titles de 66 a 70 caracteres (jev-seo, JEV-007): el meta_title
   // de la base les añade « | 3R Core» y Google los cortaba. Se quita solo la
   // marca —la keyword y el resto del texto quedan igual— y la descripción de la
