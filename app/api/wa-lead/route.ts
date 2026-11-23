@@ -23,15 +23,27 @@ export async function POST(request: Request) {
     if (sitio_web) {
       return NextResponse.json({ ok: true });
     }
-    // Un celular sin dígitos suficientes es basura automatizada, no un lead:
-    // el panel se llenaba de filas inútiles que además contaban como conversión.
+    // Un celular sin dígitos suficientes suele ser basura automatizada: el panel
+    // se llenaba de filas inútiles que además contaban como conversión.
+    // 23-nov-2026: pero una PERSONA que escribe el celular incompleto también
+    // caía aquí y se perdía en silencio (el modal le abría WhatsApp igual, así
+    // que le escribía a 3R Core y no salía en el panel; pasó el 20-nov). Si la
+    // petición trae la visita propia del sitio (cookie r3_sid, que un bot que
+    // llama a la API directo no tiene), se guarda marcada para buscarla en
+    // WhatsApp por nombre y hora. Sin visita, se sigue descartando.
     const digitos = String(celular).replace(/\D/g, '');
-    if (digitos.length < 7 || digitos.length > 15) {
+    const celularValido = digitos.length >= 7 && digitos.length <= 15;
+    const visitaReal = /(?:^|;\s*)r3_sid=[A-Za-z0-9]{8,64}/.test(request.headers.get('cookie') || '');
+    if (!celularValido && !visitaReal) {
       return NextResponse.json({ ok: true });
     }
+    const avisoCelular = celularValido
+      ? null
+      : `Celular incompleto: «${String(celular).slice(0, 40)}» (búscalo en WhatsApp por nombre y hora)`;
     // El GCLID va en su propia línea para poder exportar conversiones offline a
     // Google Ads (subir gclid + fecha/hora de conversión cuando el lead cierre).
     const mensaje = [
+      avisoCelular,
       // Los demás captadores (PillarWaCapture, landing…) mandan solo `proyecto`
       // y es su servicio; el modal global manda `servicio` + consulta aparte.
       servicio ? `Servicio: ${servicio}` : proyecto ? `Servicio: ${proyecto}` : null,
@@ -66,7 +78,7 @@ export async function POST(request: Request) {
         email: typeof email === 'string' ? email : undefined,
         empresa: typeof empresa === 'string' ? empresa : undefined,
         servicio: servicio || proyecto,
-        mensaje: [servicio && proyecto ? `Consulta: ${proyecto}` : null, web ? `Web: ${web}` : null, consulta || null]
+        mensaje: [avisoCelular, servicio && proyecto ? `Consulta: ${proyecto}` : null, web ? `Web: ${web}` : null, consulta || null]
           .filter(Boolean).join('\n') || undefined,
         consentimiento_publicidad: consentimiento_publicidad === true,
       }, body),
